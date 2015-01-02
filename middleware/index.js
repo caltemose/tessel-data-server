@@ -1,9 +1,8 @@
 var express = require('express'),
-    path = require('path'),
     bodyParser = require('body-parser');
 
 module.exports = function (app) {
-    app.use(express.logger('dev'));
+    // app.use(express.logger('dev'));
     
     app.use(bodyParser.json());
 

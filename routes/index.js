@@ -1,7 +1,6 @@
 var api = require('./api');
-// var errors = require('./errors');
 
-module.exports = function (app) {
+module.exports = function (app, db) {
 
     // home
     app.get('/', function (req, res, next) {
@@ -9,7 +8,7 @@ module.exports = function (app) {
     })
 
     // api
-    api(app);
+    api(app, db);
 
     // errors
     app.use(function(err, req, res, next) {
