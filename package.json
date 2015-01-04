@@ -1,6 +1,6 @@
 {
   "name": "tessel-data-server",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "description": "Data store/api for recording Tessel/IOT data.",
   "main": "index.js",
