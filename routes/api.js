@@ -15,6 +15,8 @@ module.exports = function (app, db) {
     });
 
     app.post('/api/weather', function (req, res) {
+        console.log('/api/weather POST', req.body);
+
         // require a date property
         if (!req.body.date) res.jsonp({err:'You must supply a date property.'});
 
@@ -31,6 +33,7 @@ module.exports = function (app, db) {
             if (!result) return res.jsonp({err:'No data inserted into database.'});
             
             // return results
+            console.log(result[0]);
             res.jsonp({result:result[0]});
         });
     });
