@@ -1,3 +1,5 @@
+var moment = require('moment');
+
 module.exports = function (app, db) {
 
     // get the weather collection
@@ -51,12 +53,63 @@ module.exports = function (app, db) {
         // return res.jsonp({start:req.params.start, end:req.params.end});
     });
 
-    app.get('/api/weather/testing', function (req, res) {
-        // return some recent weather sorted by date
-        weather.find({}).sort({date:-1}).limit(2000).toArray(function(err, documents) {
-            if (err) res.jsonp({err:err});
-            else res.jsonp({result: documents});
+    app.get('/api/weather/testing/:date/:count', function (req, res) {
+        var datestring = req.params.date; // || '2015-02-04T00:00:00.000Z';
+        var count = req.params.count;
+
+        var endDate = moment(datestring);
+        var startDate = moment(datestring).subtract(count, 'days');
+
+        var query = {
+            date: {
+                $gte: new Date(startDate.format()),
+                $lt: new Date(endDate.format())
+            }
+        }
+
+        var data = [];
+        var lastInsert;
+
+        var cursor = weather.find(query);
+        
+        cursor.each(function (err, doc) {
+            if (err) return;
+
+            if (doc === null) {
+                // done
+                console.log('filtered result count:', data.length);
+                return res.jsonp({results: data});
+            }
+
+            // first item
+            if (!lastInsert) {
+                data.push(doc);
+                lastInsert = doc;
+
+            } else {
+                // if doc.date is in the next hour after the lastInsert.date
+                //    push to data; update lastInsert
+                if (docDateIsNextHourPlus(doc.date, lastInsert.date)) {
+                    data.push(doc);
+                    lastInsert = doc;
+                }
+            }
         });
+
     });
 
 };
+
+// return current.date is in the hour following previous.date (or later)
+function docDateIsNextHourPlus (current, previous) {
+    var mCurrent = moment(current);
+    var mPrevious = moment(previous);
+
+    var startHour = mPrevious.clone().startOf('hour');
+    startHour.add(1, 'hours');
+    var endHour = startHour.clone().add(1, 'hours');
+
+    var isBetween = mCurrent.isAfter(startHour);
+
+    return isBetween;
+}
