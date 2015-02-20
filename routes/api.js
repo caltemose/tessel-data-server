@@ -1,3 +1,5 @@
+var moment = require('moment');
+
 module.exports = function (app, db) {
 
     // get the weather collection
@@ -10,9 +12,7 @@ module.exports = function (app, db) {
     });
 
     app.get('/api/weather', function (req, res) {
-        // return most recent weather sorted by date
-        // var weather = db.collection("weather");
-        weather.find({}).sort({date:-1}).toArray(function(err, documents) {
+        weather.find({}).sort({date:-1}).limit(1).toArray(function(err, documents) {
             if (err) res.jsonp({err:err});
             else res.jsonp({result: documents});
         });
@@ -57,6 +57,41 @@ module.exports = function (app, db) {
             if (err) res.jsonp({err:err});
             else res.jsonp({result: documents});
         });
+    });
+
+    // get the temperature each hour for a specified number of days
+    app.get('/api/weather/days/:datetime', function (req, res) { // /:count
+        var datetime = req.params.datetime;
+        if (!datetime) return res.jsonp({err:"You must provide a datetime"});
+
+        query = {'date' : {'$gte' : new Date(datetime)}};
+
+        weather.findOne(query, function (err, doc) {
+            res.jsonp({doc: doc});
+            // day[inserted] = doc;
+            // if (++inserted === 24) {
+            //     console.log('day done', day);
+            // }
+        });
+
+        // var inserted = 0;
+        // var days = [];
+        // var day = {};
+        // var i, query, datetime;
+
+        // for(i=0; i<24; i++) {
+        //     // date query to find the data for this hour
+        //     datetime = '2015-02-12T' + (i > 9 ? i : '0' + i) + ':00:00.000Z';
+        //     query = {'date' : {'$gte' : new Date(datetime)}};
+        //     weather.findOne(query, function (err, doc) {
+        //         console.log(doc);
+        //         day[inserted] = doc;
+        //         if (++inserted === 24) {
+        //             console.log('day done', day);
+        //         }
+        //     });
+        // }
+
     });
 
 };
